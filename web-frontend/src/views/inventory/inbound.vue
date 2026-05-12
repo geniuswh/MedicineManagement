@@ -211,7 +211,7 @@ onMounted(() => {
 
 const loadProducts = async () => {
   try {
-    const url = form.productType === 'medicine' ? '/api/medicines' : '/api/devices'
+    const url = form.productType === 'medicine' ? '/medicines' : '/devices'
     const res = await request({ url, method: 'get', params: { pageSize: 100 } })
     productList.value = res.list
   } catch (error) {

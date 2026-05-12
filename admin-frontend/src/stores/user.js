@@ -1,10 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 
+function safeParse(str, fallback = {}) {
+  try {
+    if (!str || str === 'undefined' || str === 'null') return fallback
+    return JSON.parse(str)
+  } catch {
+    return fallback
+  }
+}
+
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('admin_token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('admin_userInfo') || '{}'))
-  const permissions = ref(JSON.parse(localStorage.getItem('admin_permissions') || '[]'))
+  const userInfo = ref(safeParse(localStorage.getItem('admin_userInfo')))
+  const permissions = ref(safeParse(localStorage.getItem('admin_permissions'), []))
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => userInfo.value.role === 'admin')

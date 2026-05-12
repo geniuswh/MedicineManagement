@@ -83,29 +83,25 @@ const handleLogin = async () => {
   if (!valid) return
   
   loading.value = true
-  
+
   try {
-    // 模拟登录 - 实际应调用API
-    if (loginForm.account === 'admin' && loginForm.password === 'admin123') {
-      userStore.handleLogin({
-        token: 'admin_token_' + Date.now(),
-        userInfo: {
-          id: 1,
-          name: '管理员',
-          account: 'admin',
-          avatar: '',
-          role: 'admin'
-        },
-        permissions: ['*']
-      })
-      
-      ElMessage.success('登录成功')
-      router.push('/')
-    } else {
-      ElMessage.error('账号或密码错误')
-    }
+    const request = (await import('@/utils/request')).default
+    const res = await request({
+      url: '/auth/login',
+      method: 'post',
+      data: loginForm
+    })
+    
+    userStore.handleLogin({
+      token: res.token,
+      userInfo: res.userInfo,
+      permissions: res.permissions || []
+    })
+    
+    ElMessage.success('登录成功')
+    router.push('/')
   } catch (error) {
-    ElMessage.error(error.message || '登录失败')
+    ElMessage.error(error.message || '账号或密码错误')
   } finally {
     loading.value = false
   }

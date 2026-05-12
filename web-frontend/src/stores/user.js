@@ -2,10 +2,19 @@
 import { ref, computed } from 'vue'
 import request from '@/utils/request'
 
+function safeParse(str, fallback = {}) {
+  try {
+    if (!str || str === 'undefined' || str === 'null') return fallback
+    return JSON.parse(str)
+  } catch {
+    return fallback
+  }
+}
+
 export const useUserStore = defineStore('user', () => {
   const token = ref(localStorage.getItem('token') || '')
-  const userInfo = ref(JSON.parse(localStorage.getItem('userInfo') || '{}'))
-  const permissions = ref(JSON.parse(localStorage.getItem('permissions') || '[]'))
+  const userInfo = ref(safeParse(localStorage.getItem('userInfo')))
+  const permissions = ref(safeParse(localStorage.getItem('permissions'), []))
 
   const isLoggedIn = computed(() => !!token.value)
 

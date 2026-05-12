@@ -93,24 +93,46 @@ app.get('/api/medicines/categories', (req, res) => {
 });
 
 app.post('/api/medicines', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  const result = db.prepare(`
-    INSERT INTO medicines (name, barcode, category, spec, unit, manufacturer, approvalNumber, price, stock, minStock, batchNo, expiryDate, status, remark)
-    VALUES (@name, @barcode, @category, @spec, @unit, @manufacturer, @approvalNumber, @price, @stock, @minStock, @batchNo, @expiryDate, @status, @remark)
-  `).run(data);
-  const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(result.lastInsertRowid);
-  res.json(response(medicine));
+  try {
+    const db = getDb();
+    const data = req.body;
+    // 确保必要字段有默认值
+    data.stock = data.stock || 0;
+    data.minStock = data.minStock || 0;
+    data.price = data.price || 0;
+    data.status = data.status !== undefined ? data.status : 1;
+    data.batchNo = data.batchNo || '';
+    data.expiryDate = data.expiryDate || '';
+    data.barcode = data.barcode || '';
+    data.remark = data.remark || '';
+    data.approvalNumber = data.approvalNumber || '';
+    data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    const result = db.prepare(`
+      INSERT INTO medicines (name, barcode, category, spec, unit, manufacturer, approvalNumber, price, stock, minStock, batchNo, expiryDate, status, remark, updateTime)
+      VALUES (@name, @barcode, @category, @spec, @unit, @manufacturer, @approvalNumber, @price, @stock, @minStock, @batchNo, @expiryDate, @status, @remark, @updateTime)
+    `).run(data);
+    const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(result.lastInsertRowid);
+    res.json(response(medicine));
+  } catch (err) {
+    console.error('新增药品失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 app.put('/api/medicines/:id', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
-  db.prepare(`UPDATE medicines SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
-  const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(req.params.id);
-  res.json(response(medicine));
+  try {
+    const db = getDb();
+    const data = req.body;
+    data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
+    db.prepare(`UPDATE medicines SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
+    const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(req.params.id);
+    res.json(response(medicine));
+  } catch (err) {
+    console.error('更新药品失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 app.delete('/api/medicines/:id', authMiddleware, (req, res) => {
@@ -148,24 +170,45 @@ app.get('/api/devices/categories', (req, res) => {
 });
 
 app.post('/api/devices', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  const result = db.prepare(`
-    INSERT INTO devices (name, barcode, category, spec, unit, manufacturer, registrationNumber, price, stock, minStock, batchNo, expiryDate, status, remark)
-    VALUES (@name, @barcode, @category, @spec, @unit, @manufacturer, @registrationNumber, @price, @stock, @minStock, @batchNo, @expiryDate, @status, @remark)
-  `).run(data);
-  const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(result.lastInsertRowid);
-  res.json(response(device));
+  try {
+    const db = getDb();
+    const data = req.body;
+    data.stock = data.stock || 0;
+    data.minStock = data.minStock || 0;
+    data.price = data.price || 0;
+    data.status = data.status !== undefined ? data.status : 1;
+    data.batchNo = data.batchNo || '';
+    data.expiryDate = data.expiryDate || '';
+    data.barcode = data.barcode || '';
+    data.remark = data.remark || '';
+    data.registrationNumber = data.registrationNumber || '';
+    data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+    const result = db.prepare(`
+      INSERT INTO devices (name, barcode, category, spec, unit, manufacturer, registrationNumber, price, stock, minStock, batchNo, expiryDate, status, remark, updateTime)
+      VALUES (@name, @barcode, @category, @spec, @unit, @manufacturer, @registrationNumber, @price, @stock, @minStock, @batchNo, @expiryDate, @status, @remark, @updateTime)
+    `).run(data);
+    const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(result.lastInsertRowid);
+    res.json(response(device));
+  } catch (err) {
+    console.error('新增器械失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 app.put('/api/devices/:id', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
-  db.prepare(`UPDATE devices SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
-  const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);
-  res.json(response(device));
+  try {
+    const db = getDb();
+    const data = req.body;
+    data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
+    db.prepare(`UPDATE devices SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
+    const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);
+    res.json(response(device));
+  } catch (err) {
+    console.error('更新器械失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 app.delete('/api/devices/:id', authMiddleware, (req, res) => {
@@ -197,23 +240,39 @@ app.get('/api/inbound', (req, res) => {
 });
 
 app.post('/api/inbound', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  data.createTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  if (!data.date) data.date = new Date().toISOString().split('T')[0];
+  try {
+    const db = getDb();
+    const data = req.body;
+    data.createTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    if (!data.date) data.date = new Date().toISOString().split('T')[0];
+    if (!data.remark) data.remark = '';
+    if (!data.supplier) data.supplier = '';
+    if (!data.productionDate) data.productionDate = '';
+    if (!data.expiryDate) data.expiryDate = '';
+    if (!data.batchNo) data.batchNo = '';
+    if (!data.spec) data.spec = '';
+    if (!data.unit) data.unit = '';
+    data.productId = parseInt(data.productId) || 0;
+    data.quantity = parseInt(data.quantity) || 0;
+    data.price = parseFloat(data.price) || 0;
+    data.totalAmount = parseFloat(data.totalAmount) || 0;
+    data.operatorId = parseInt(data.operatorId) || 0;
 
-  const insert = db.prepare(`
-    INSERT INTO inbound_records (productId, productName, productType, spec, batchNo, quantity, unit, price, totalAmount, supplier, productionDate, expiryDate, operatorId, operatorName, date, remark, createTime)
-    VALUES (@productId, @productName, @productType, @spec, @batchNo, @quantity, @unit, @price, @totalAmount, @supplier, @productionDate, @expiryDate, @operatorId, @operatorName, @date, @remark, @createTime)
-  `);
-  const result = insert.run(data);
+    const result = db.prepare(`
+      INSERT INTO inbound_records (productId, productName, productType, spec, batchNo, quantity, unit, price, totalAmount, supplier, productionDate, expiryDate, operatorId, operatorName, date, remark, createTime)
+      VALUES (@productId, @productName, @productType, @spec, @batchNo, @quantity, @unit, @price, @totalAmount, @supplier, @productionDate, @expiryDate, @operatorId, @operatorName, @date, @remark, @createTime)
+    `).run(data);
 
-  // 更新库存
-  const table = data.productType === 'medicine' ? 'medicines' : 'devices';
-  db.prepare(`UPDATE ${table} SET stock = stock + ?, updateTime = CURRENT_TIMESTAMP WHERE id = ?`).run(data.quantity, data.productId);
+    // 更新库存 - productType 可能是中文或英文
+    const table = (data.productType === 'medicine' || data.productType === '药品') ? 'medicines' : 'devices';
+    db.prepare(`UPDATE ${table} SET stock = stock + ?, updateTime = CURRENT_TIMESTAMP WHERE id = ?`).run(data.quantity, data.productId);
 
-  const record = db.prepare('SELECT * FROM inbound_records WHERE id = ?').get(result.lastInsertRowid);
-  res.json(response(record));
+    const record = db.prepare('SELECT * FROM inbound_records WHERE id = ?').get(result.lastInsertRowid);
+    res.json(response(record));
+  } catch (err) {
+    console.error('入库失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 // ========== 出库记录 ==========
@@ -239,23 +298,39 @@ app.get('/api/outbound', (req, res) => {
 });
 
 app.post('/api/outbound', authMiddleware, (req, res) => {
-  const db = getDb();
-  const data = req.body;
-  data.createTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-  if (!data.date) data.date = new Date().toISOString().split('T')[0];
+  try {
+    const db = getDb();
+    const data = req.body;
+    data.createTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    if (!data.date) data.date = new Date().toISOString().split('T')[0];
+    if (!data.remark) data.remark = '';
+    if (!data.department) data.department = '';
+    if (!data.receiver) data.receiver = '';
+    if (!data.purpose) data.purpose = '';
+    if (!data.batchNo) data.batchNo = '';
+    if (!data.spec) data.spec = '';
+    if (!data.unit) data.unit = '';
+    data.productId = parseInt(data.productId) || 0;
+    data.quantity = parseInt(data.quantity) || 0;
+    data.price = parseFloat(data.price) || 0;
+    data.totalAmount = parseFloat(data.totalAmount) || 0;
+    data.operatorId = parseInt(data.operatorId) || 0;
 
-  const insert = db.prepare(`
-    INSERT INTO outbound_records (productId, productName, productType, spec, batchNo, quantity, unit, price, totalAmount, department, receiver, purpose, operatorId, operatorName, date, remark, createTime)
-    VALUES (@productId, @productName, @productType, @spec, @batchNo, @quantity, @unit, @price, @totalAmount, @department, @receiver, @purpose, @operatorId, @operatorName, @date, @remark, @createTime)
-  `);
-  const result = insert.run(data);
+    const result = db.prepare(`
+      INSERT INTO outbound_records (productId, productName, productType, spec, batchNo, quantity, unit, price, totalAmount, department, receiver, purpose, operatorId, operatorName, date, remark, createTime)
+      VALUES (@productId, @productName, @productType, @spec, @batchNo, @quantity, @unit, @price, @totalAmount, @department, @receiver, @purpose, @operatorId, @operatorName, @date, @remark, @createTime)
+    `).run(data);
 
-  // 更新库存
-  const table = data.productType === 'medicine' ? 'medicines' : 'devices';
-  db.prepare(`UPDATE ${table} SET stock = MAX(0, stock - ?), updateTime = CURRENT_TIMESTAMP WHERE id = ?`).run(data.quantity, data.productId);
+    // 更新库存
+    const table = (data.productType === 'medicine' || data.productType === '药品') ? 'medicines' : 'devices';
+    db.prepare(`UPDATE ${table} SET stock = MAX(0, stock - ?), updateTime = CURRENT_TIMESTAMP WHERE id = ?`).run(data.quantity, data.productId);
 
-  const record = db.prepare('SELECT * FROM outbound_records WHERE id = ?').get(result.lastInsertRowid);
-  res.json(response(record));
+    const record = db.prepare('SELECT * FROM outbound_records WHERE id = ?').get(result.lastInsertRowid);
+    res.json(response(record));
+  } catch (err) {
+    console.error('出库失败:', err.message);
+    res.status(500).json(response(err.message, false));
+  }
 });
 
 // ========== 库存预警 ==========
