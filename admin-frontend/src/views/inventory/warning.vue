@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="warning-page">
     <div class="page-header">
       <h1 class="page-title">库存预警</h1>
@@ -61,7 +61,7 @@ onMounted(() => loadData())
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await request({ url: '/api/warnings', method: 'get' })
+    const res = await request({ url: '/warnings', method: 'get' })
     warnings.value = res
   } catch (error) {
     ElMessage.error('加载失败')

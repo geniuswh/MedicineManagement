@@ -1,106 +1,47 @@
-// Admin Mock请求封装
-import mockApi from '@/mock/api'
-import { medicineCategories } from '@/mock/medicine'
-import { deviceCategories } from '@/mock/device'
+import axios from 'axios'
+import { ElMessage } from 'element-plus'
+import { useUserStore } from '@/stores/user'
+import router from '@/router'
 
-const delay = (ms = 200) => new Promise(resolve => setTimeout(resolve, ms))
+const request = axios.create({
+  baseURL: 'http://localhost:3002/api',
+  timeout: 10000
+})
 
-// 请求封装
-const request = async (config) => {
-  const { url, method = 'get', data, params } = config
-  
-  // 解析API路径
-  const apiPath = url.replace('/api/', '').split('/')
-  
-  await delay(150)
-  
-  try {
-    let result
-    
-    // 路由分发
-    switch (apiPath[0]) {
-      // 认证相关
-      case 'auth':
-        if (apiPath[1] === 'login') {
-          result = await mockApi.login(data.account, data.password)
-        }
-        break
-        
-      // 药品管理
-      case 'medicines':
-        if (apiPath[1] === 'categories') {
-          result = { code: 200, data: medicineCategories }
-        } else {
-          result = await mockApi.getMedicines(params || {})
-        }
-        break
-        
-      // 器械管理
-      case 'devices':
-        if (apiPath[1] === 'categories') {
-          result = { code: 200, data: deviceCategories }
-        } else {
-          result = await mockApi.getDevices(params || {})
-        }
-        break
-        
-      // 入库记录
-      case 'inbound':
-        result = await mockApi.getInboundRecords(params || {})
-        break
-        
-      // 出库记录
-      case 'outbound':
-        result = await mockApi.getOutboundRecords(params || {})
-        break
-        
-      // 库存预警
-      case 'warnings':
-        result = await mockApi.getWarnings()
-        break
-        
-      // 统计分析
-      case 'statistics':
-        if (apiPath[1] === 'trend') {
-          result = await mockApi.getTrendData()
-        } else {
-          result = await mockApi.getStatistics(params?.period)
-        }
-        break
-        
-      // 用户管理
-      case 'users':
-        result = await mockApi.getUsers(params || {})
-        break
-        
-      // 角色管理
-      case 'roles':
-        result = await mockApi.getRoles()
-        break
-        
-      // 权限管理
-      case 'permissions':
-        result = await mockApi.getPermissions()
-        break
-        
-      // 操作日志
-      case 'logs':
-        result = await mockApi.getOperationLogs(params || {})
-        break
-        
-      default:
-        result = { code: 404, message: 'API not found' }
+// 请求拦截
+request.interceptors.request.use(
+  config => {
+    const userStore = useUserStore()
+    if (userStore.token) {
+      config.headers.Authorization = `Bearer ${userStore.token}`
     }
-    
-    if (result && result.code === 200) {
-      return result.data
+    return config
+  },
+  error => Promise.reject(error)
+)
+
+// 响应拦截
+request.interceptors.response.use(
+  response => {
+    const res = response.data
+    if (res.code === 200) {
+      return res.data
     } else {
-      throw new Error(result?.message || '请求失败')
+      ElMessage.error(res.message || '请求失败')
+      return Promise.reject(new Error(res.message || '请求失败'))
     }
-  } catch (error) {
-    console.error('Mock API Error:', error)
-    throw error
+  },
+  error => {
+    if (error.response?.status === 401) {
+      const userStore = useUserStore()
+      userStore.logout()
+      router.push('/login')
+      ElMessage.error('登录已过期，请重新登录')
+    } else {
+      ElMessage.error(error.message || '网络错误')
+    }
+    return Promise.reject(error)
   }
-}
+)
 
 export default request

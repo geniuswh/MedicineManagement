@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="user-page">
     <div class="page-header">
       <h1 class="page-title">用户管理</h1>
@@ -69,7 +69,7 @@ onMounted(() => loadData())
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await request({ url: '/api/users', method: 'get', params: searchForm })
+    const res = await request({ url: '/users', method: 'get', params: searchForm })
     tableData.value = res.list
   } catch (error) {
     ElMessage.error('加载失败')
@@ -90,7 +90,15 @@ const handlePermission = (row) => ElMessage.info('设置权限: ' + row.name)
 
 const handleDelete = (row) => {
   ElMessageBox.confirm(`确定删除用户"${row.name}"吗？`, '提示', { type: 'warning' })
-    .then(() => { ElMessage.success('删除成功'); loadData() })
+    .then(async () => {
+      try {
+        await request({ url: `/users/${row.id}`, method: 'delete' })
+        ElMessage.success('删除成功')
+        loadData()
+      } catch (error) {
+        ElMessage.error('删除失败')
+      }
+    })
 }
 
 const getRoleType = (role) => {

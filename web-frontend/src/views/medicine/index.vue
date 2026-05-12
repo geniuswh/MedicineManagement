@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="medicine-page">
     <div class="page-header">
       <h1 class="page-title">药品管理</h1>
@@ -81,7 +81,7 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await request({
-      url: '/api/medicines',
+      url: '/medicines',
       method: 'get',
       params: { ...pagination, ...searchForm }
     })

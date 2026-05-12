@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="inventory-page">
     <div class="page-header">
       <h1 class="page-title">库存管理</h1>
@@ -167,7 +167,7 @@ const loadData = async () => {
   try {
     const [medicinesRes, devicesRes] = await Promise.all([
       request({
-        url: '/api/medicines',
+        url: '/medicines',
         method: 'get',
         params: {
           page: pagination.page,
@@ -177,7 +177,7 @@ const loadData = async () => {
         }
       }),
       request({
-        url: '/api/devices',
+        url: '/devices',
         method: 'get',
         params: {
           page: pagination.page,

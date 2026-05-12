@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="inbound-page">
     <div class="page-header">
       <h1 class="page-title">入库管理</h1>
@@ -222,7 +222,7 @@ const loadProducts = async () => {
 const loadRecentRecords = async () => {
   try {
     const res = await request({
-      url: '/api/inbound',
+      url: '/inbound',
       method: 'get',
       params: { pageSize: 10 }
     })
@@ -262,7 +262,7 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     await request({
-      url: '/api/inbound',
+      url: '/inbound',
       method: 'post',
       data: {
         productId: form.productId,

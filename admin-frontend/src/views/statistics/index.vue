@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="statistics-page">
     <div class="page-header">
       <h1 class="page-title">数据统计</h1>
@@ -140,7 +140,7 @@ onMounted(() => {
 
 const loadStatistics = async () => {
   try {
-    const res = await request({ url: '/api/statistics', method: 'get', params: { period: period.value } })
+    const res = await request({ url: '/statistics', method: 'get', params: { period: period.value } })
     Object.assign(stats, res.period || res)
   } catch (error) {
     console.error(error)
@@ -149,7 +149,7 @@ const loadStatistics = async () => {
 
 const loadTrendData = async () => {
   try {
-    const res = await request({ url: '/api/statistics/trend', method: 'get' })
+    const res = await request({ url: '/statistics/trend', method: 'get' })
     initCharts(res)
   } catch (error) {
     initCharts([])

@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="outbound-page">
     <div class="page-header">
       <h1 class="page-title">出库管理</h1>
@@ -217,7 +217,7 @@ const loadProducts = async () => {
 const loadRecentRecords = async () => {
   try {
     const res = await request({
-      url: '/api/outbound',
+      url: '/outbound',
       method: 'get',
       params: { pageSize: 10 }
     })
@@ -266,7 +266,7 @@ const handleSubmit = async () => {
   submitting.value = true
   try {
     await request({
-      url: '/api/outbound',
+      url: '/outbound',
       method: 'post',
       data: {
         productId: form.productId,

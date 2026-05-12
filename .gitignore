@@ -9,4 +9,6 @@ miniprogram/node_modules/
 admin-frontend/node_modules/
 web-frontend/node_modules/
 cloudfunctions/node_modules/
+server/node_modules/
+server/data/
 package-lock.json

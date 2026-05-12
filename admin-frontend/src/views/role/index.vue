@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="role-page">
     <div class="page-header">
       <h1 class="page-title">角色管理</h1>
@@ -32,7 +32,7 @@ onMounted(() => loadRoles())
 
 const loadRoles = async () => {
   try {
-    const res = await request({ url: '/api/roles', method: 'get' })
+    const res = await request({ url: '/roles', method: 'get' })
     roles.value = res
   } catch (error) {
     roles.value = [

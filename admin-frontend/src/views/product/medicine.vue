@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="medicine-page">
     <div class="page-header">
       <h1 class="page-title">药品管理</h1>
@@ -170,7 +170,7 @@ const loadData = async () => {
   loading.value = true
   try {
     const res = await request({
-      url: '/api/medicines',
+      url: '/medicines',
       method: 'get',
       params: { ...pagination, ...searchForm }
     })
@@ -185,7 +185,7 @@ const loadData = async () => {
 
 const loadCategories = async () => {
   try {
-    const res = await request({ url: '/api/medicines/categories', method: 'get' })
+    const res = await request({ url: '/medicines/categories', method: 'get' })
     categories.value = res
   } catch (error) {
     // 使用默认分类
@@ -218,18 +218,33 @@ const handleDelete = (row) => {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
     type: 'warning'
-  }).then(() => {
-    ElMessage.success('删除成功')
-    loadData()
+  }).then(async () => {
+    try {
+      await request({ url: `/medicines/${row.id}`, method: 'delete' })
+      ElMessage.success('删除成功')
+      loadData()
+    } catch (error) {
+      ElMessage.error('删除失败')
+    }
   })
 }
 
 const handleSubmit = async () => {
   const valid = await formRef.value.validate().catch(() => false)
   if (!valid) return
-  
-  ElMessage.success(form.id ? '编辑成功' : '新增成功')
-  dialogVisible.value = false
-  loadData()
+
+  try {
+    if (form.id) {
+      await request({ url: `/medicines/${form.id}`, method: 'put', data: { ...form } })
+      ElMessage.success('编辑成功')
+    } else {
+      await request({ url: '/medicines', method: 'post', data: { ...form, stock: 0 } })
+      ElMessage.success('新增成功')
+    }
+    dialogVisible.value = false
+    loadData()
+  } catch (error) {
+    ElMessage.error(form.id ? '编辑失败' : '新增失败')
+  }
 }
 </script>

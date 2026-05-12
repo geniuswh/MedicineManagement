@@ -1,159 +1,73 @@
 /**
- * 数据库操作封装 - 纯Mock模式
+ * 数据库操作封装 - 通过后端API
  */
 
-const mock = require('./mock')
+const API_BASE = 'http://localhost:3002/api'
 
-/**
- * 通用查询方法
- */
-async function query(collection, options = {}) {
-  return mockQuery(collection, options)
+function getToken() {
+  return wx.getStorageSync('token') || ''
 }
 
-// Mock查询
-function mockQuery(collection, options) {
-  const { where = {}, limit = 20, skip = 0 } = options
-  
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let data = []
-      
-      switch (collection) {
-        case 'medicines':
-          data = mock.mockMedicines
-          break
-        case 'devices':
-          data = mock.mockDevices
-          break
-        case 'users':
-          data = mock.mockUsers
-          break
-        case 'inbound_records':
-          data = mock.mockInboundRecords
-          break
-        case 'outbound_records':
-          data = mock.mockOutboundRecords
-          break
+async function request(url, method = 'GET', data = {}) {
+  return new Promise((resolve, reject) => {
+    wx.request({
+      url: `${API_BASE}${url}`,
+      method,
+      data,
+      header: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${getToken()}`
+      },
+      success: (res) => {
+        if (res.statusCode === 200 && res.data.code === 200) {
+          resolve({ success: true, data: res.data.data })
+        } else if (res.statusCode === 401) {
+          wx.removeStorageSync('token')
+          wx.removeStorageSync('userInfo')
+          wx.redirectTo({ url: '/pages/login/login' })
+          reject(new Error('登录已过期'))
+        } else {
+          resolve({ success: false, error: res.data?.message || '请求失败' })
+        }
+      },
+      fail: (err) => {
+        console.error('API请求失败:', err)
+        resolve({ success: false, error: '网络错误' })
       }
-      
-      resolve({
-        success: true,
-        data: data.slice(skip, skip + limit),
-        total: data.length
-      })
-    }, 300)
+    })
   })
 }
 
-/**
- * 根据ID查询单条数据
- */
-async function getById(collection, id) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let data = null
-      
-      switch (collection) {
-        case 'medicines':
-          data = mock.mockMedicines.find(m => m._id === id)
-          break
-        case 'devices':
-          data = mock.mockDevices.find(d => d._id === id)
-          break
-        case 'users':
-          data = mock.mockUsers.find(u => u._id === id)
-          break
-      }
-      
-      resolve({
-        success: !!data,
-        data: data || null,
-        error: data ? null : '未找到数据'
-      })
-    }, 200)
-  })
-}
+const mockApi = {
+  // 登录
+  login: (account, password) => request('/auth/login', 'POST', { account, password }),
 
-/**
- * 新增数据
- */
-async function add(collection, data) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      const newId = collection.substring(0, 3) + '_' + Date.now()
-      
-      const newItem = {
-        _id: newId,
-        ...data,
-        createTime: new Date(),
-        updateTime: new Date()
-      }
-      
-      switch (collection) {
-        case 'inbound_records':
-          mock.mockInboundRecords.unshift(newItem)
-          break
-        case 'outbound_records':
-          mock.mockOutboundRecords.unshift(newItem)
-          break
-      }
-      
-      resolve({
-        success: true,
-        id: newId
-      })
-    }, 300)
-  })
-}
+  // 获取药品列表
+  getMedicines: (params = {}) => request(`/medicines?keyword=${params.keyword || ''}&category=${params.category || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 50}`),
 
-/**
- * 更新数据
- */
-async function update(collection, id, data) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ success: true })
-    }, 300)
-  })
-}
+  // 获取器械列表
+  getDevices: (params = {}) => request(`/devices?keyword=${params.keyword || ''}&category=${params.category || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 50}`),
 
-/**
- * 统计数量
- */
-async function count(collection, where = {}) {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      let total = 0
-      
-      switch (collection) {
-        case 'medicines':
-          total = mock.mockMedicines.length
-          break
-        case 'devices':
-          total = mock.mockDevices.length
-          break
-        case 'inbound_records':
-          total = mock.mockInboundRecords.length
-          break
-        case 'outbound_records':
-          total = mock.mockOutboundRecords.length
-          break
-      }
-      
-      resolve({
-        success: true,
-        total
-      })
-    }, 200)
-  })
+  // 获取入库记录
+  getInboundRecords: (params = {}) => request(`/inbound?keyword=${params.keyword || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 50}`),
+
+  // 获取出库记录
+  getOutboundRecords: (params = {}) => request(`/outbound?keyword=${params.keyword || ''}&page=${params.page || 1}&pageSize=${params.pageSize || 50}`),
+
+  // 获取统计数据
+  getStatistics: () => request('/statistics'),
+
+  // 获取库存预警
+  getWarnings: () => request('/warnings'),
+
+  // 入库
+  addInbound: (data) => request('/inbound', 'POST', data),
+
+  // 出库
+  addOutbound: (data) => request('/outbound', 'POST', data)
 }
 
 module.exports = {
-  query,
-  getById,
-  add,
-  update,
-  count,
-  mockApi: mock.mockApi
+  mockApi,
+  request
 }

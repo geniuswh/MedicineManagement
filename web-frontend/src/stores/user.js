@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia'
+﻿import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import request from '@/utils/request'
 
@@ -13,7 +13,7 @@ export const useUserStore = defineStore('user', () => {
   async function handleLogin(credentials) {
     try {
       const res = await request({
-        url: '/api/auth/login',
+        url: '/auth/login',
         method: 'post',
         data: credentials
       })
@@ -36,7 +36,7 @@ export const useUserStore = defineStore('user', () => {
   async function fetchUserInfo() {
     try {
       const res = await request({
-        url: '/api/auth/info',
+        url: '/auth/info',
         method: 'get'
       })
       

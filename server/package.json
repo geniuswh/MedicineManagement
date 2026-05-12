@@ -1,0 +1,17 @@
+{
+  "name": "medicine-management-server",
+  "version": "1.0.0",
+  "description": "医药管理系统后端服务 - SQLite",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "init-db": "node init-db.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.10.0",
+    "cors": "^2.8.6",
+    "express": "^4.22.2",
+    "jsonwebtoken": "^9.0.3",
+    "multer": "^1.4.5-lts.1"
+  }
+}

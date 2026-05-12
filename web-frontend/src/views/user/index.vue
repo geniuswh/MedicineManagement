@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="user-page">
     <div class="page-header">
       <h1 class="page-title">用户管理</h1>
@@ -42,7 +42,7 @@ onMounted(() => loadData())
 const loadData = async () => {
   loading.value = true
   try {
-    const res = await request({ url: '/api/users', method: 'get', params: { pageSize: 100 } })
+    const res = await request({ url: '/users', method: 'get', params: { pageSize: 100 } })
     users.value = res.list
   } catch (error) {
     ElMessage.error('加载失败')

@@ -1,0 +1,18 @@
+{
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/.git": true,
+    "**/server/data": true
+  },
+  "files.watcherExclude": {
+    "**/node_modules/**": true,
+    "**/dist/**": true,
+    "**/.git/**": true,
+    "**/server/data/**": true
+  },
+  "scm.diffDecorations": "minimal",
+  "files.associations": {
+    "*.vue": "vue"
+  }
+}

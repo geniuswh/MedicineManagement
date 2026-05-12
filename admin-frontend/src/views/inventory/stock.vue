@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="stock-page">
     <div class="page-header">
       <h1 class="page-title">库存查询</h1>
@@ -127,8 +127,8 @@ const loadData = async () => {
   loading.value = true
   try {
     const [medRes, devRes] = await Promise.all([
-      request({ url: '/api/medicines', method: 'get', params: { pageSize: 100, keyword: searchForm.type === 'device' ? 'xyz999' : searchForm.keyword } }),
-      request({ url: '/api/devices', method: 'get', params: { pageSize: 100, keyword: searchForm.type === 'medicine' ? 'xyz999' : searchForm.keyword } })
+      request({ url: '/medicines', method: 'get', params: { pageSize: 100, keyword: searchForm.type === 'device' ? 'xyz999' : searchForm.keyword } }),
+      request({ url: '/devices', method: 'get', params: { pageSize: 100, keyword: searchForm.type === 'medicine' ? 'xyz999' : searchForm.keyword } })
     ])
     
     let allData = [

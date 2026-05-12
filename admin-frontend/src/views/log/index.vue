@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="log-page">
     <div class="page-header">
       <h1 class="page-title">操作日志</h1>
@@ -35,7 +35,7 @@ onMounted(() => loadLogs())
 const loadLogs = async () => {
   loading.value = true
   try {
-    const res = await request({ url: '/api/logs', method: 'get' })
+    const res = await request({ url: '/logs', method: 'get' })
     logs.value = res.list
   } catch (error) {
     ElMessage.error('加载失败')

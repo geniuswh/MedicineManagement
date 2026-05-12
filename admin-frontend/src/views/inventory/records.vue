@@ -1,4 +1,4 @@
-<template>
+﻿<template>
   <div class="records-page">
     <div class="page-header">
       <h1 class="page-title">出入库记录</h1>
@@ -107,13 +107,13 @@ const loadData = async () => {
     let total = 0
     
     if (searchForm.type === 'inbound' || !searchForm.type) {
-      const inboundRes = await request({ url: '/api/inbound', method: 'get', params })
+      const inboundRes = await request({ url: '/inbound', method: 'get', params })
       allData = allData.concat(inboundRes.list.map(item => ({ ...item, type: 'inbound' })))
       total += inboundRes.total
     }
     
     if (searchForm.type === 'outbound' || !searchForm.type) {
-      const outboundRes = await request({ url: '/api/outbound', method: 'get', params })
+      const outboundRes = await request({ url: '/outbound', method: 'get', params })
       allData = allData.concat(outboundRes.list.map(item => ({ ...item, type: 'outbound' })))
       total += outboundRes.total
     }
