@@ -1,0 +1,117 @@
+<view class="outbound-container">
+  <!-- 扫码按钮 -->
+  <view class="scan-section" bindtap="scanCode">
+    <text class="iconfont icon-scan"></text>
+    <text>扫码出库</text>
+  </view>
+
+  <!-- 出库表单 -->
+  <view class="form-section">
+    <view class="form-item required">
+      <view class="form-label">产品类型</view>
+      <picker mode="selector" range="{{productTypes}}" value="{{productTypeIndex}}" bindchange="onProductTypeChange">
+        <view class="picker-value">
+          {{productTypes[productTypeIndex] || '请选择产品类型'}}
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">产品名称</view>
+      <input class="form-input" placeholder="请选择或输入产品名称" value="{{productName}}" bindtap="selectProduct" readonly />
+    </view>
+
+    <view class="form-item" wx:if="{{selectedProduct}}">
+      <view class="form-label">库存信息</view>
+      <view class="stock-info">
+        <text class="stock-label">当前库存:</text>
+        <text class="stock-value">{{selectedProduct.stock}} {{selectedProduct.unit}}</text>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">规格型号</view>
+      <input class="form-input" placeholder="规格型号" value="{{spec}}" disabled />
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">批号</view>
+      <picker mode="selector" range="{{batchList}}" range-key="batchNo" value="{{batchIndex}}" bindchange="onBatchChange">
+        <view class="picker-value">
+          {{batchList[batchIndex].batchNo || '请选择批号'}}
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-row">
+      <view class="form-item half required">
+        <view class="form-label">数量</view>
+        <input class="form-input" type="number" placeholder="0" value="{{quantity}}" bindinput="onQuantityInput" />
+      </view>
+      <view class="form-item half">
+        <view class="form-label">单位</view>
+        <input class="form-input" placeholder="件" value="{{unit}}" disabled />
+      </view>
+    </view>
+
+    <view class="form-row">
+      <view class="form-item half required">
+        <view class="form-label">单价(元)</view>
+        <input class="form-input" type="digit" placeholder="0.00" value="{{price}}" bindinput="onPriceInput" />
+      </view>
+      <view class="form-item half">
+        <view class="form-label">总金额</view>
+        <view class="form-value">¥{{totalAmount}}</view>
+      </view>
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">领用部门</view>
+      <input class="form-input" placeholder="请输入领用部门" value="{{department}}" bindinput="onDepartmentInput" />
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">领用人</view>
+      <input class="form-input" placeholder="请输入领用人姓名" value="{{receiver}}" bindinput="onReceiverInput" />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">用途说明</view>
+      <textarea class="form-textarea" placeholder="请输入用途说明" value="{{purpose}}" bindinput="onPurposeInput" maxlength="200" />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">备注</view>
+      <textarea class="form-textarea" placeholder="请输入备注信息" value="{{remark}}" bindinput="onRemarkInput" maxlength="200" />
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="btn-primary submit-btn" bindtap="submitForm" loading="{{loading}}">确认出库</button>
+  </view>
+</view>
+
+<!-- 产品选择弹窗 -->
+<view class="product-modal" wx:if="{{showProductModal}}" bindtap="closeProductModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择产品</text>
+      <text class="modal-close" bindtap="closeProductModal">×</text>
+    </view>
+    <view class="modal-search">
+      <input class="search-input" placeholder="搜索产品名称" value="{{searchKeyword}}" bindinput="onSearchInput" />
+    </view>
+    <scroll-view class="modal-list" scroll-y>
+      <view class="product-item" wx:for="{{productList}}" wx:key="_id" bindtap="selectProductItem" data-item="{{item}}">
+        <text class="product-name">{{item.name}}</text>
+        <view class="product-info">
+          <text>{{item.spec}}</text>
+          <text>库存: {{item.stock}} {{item.unit}}</text>
+        </view>
+      </view>
+    </scroll-view>
+  </view>
+</view>

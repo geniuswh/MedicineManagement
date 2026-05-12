@@ -1,0 +1,60 @@
+<view class="medicine-list">
+  <!-- 搜索栏 -->
+  <view class="search-bar">
+    <view class="search-input-wrap">
+      <text class="search-icon">🔍</text>
+      <input 
+        class="search-input" 
+        placeholder="搜索药品名称" 
+        value="{{ keyword }}"
+        bindinput="onSearchInput"
+      />
+    </view>
+  </view>
+
+  <!-- 分类筛选 -->
+  <scroll-view scroll-x class="category-scroll">
+    <view 
+      wx:for="{{ categories }}" 
+      wx:key="*this"
+      class="category-item {{ currentCategoryIndex === index ? 'active' : '' }}"
+      bindtap="onCategoryTap"
+      data-index="{{ index }}"
+    >
+      {{ item }}
+    </view>
+  </scroll-view>
+
+  <!-- 加载中 -->
+  <view wx:if="{{ loading }}" class="loading-wrap">
+    <text>加载中...</text>
+  </view>
+
+  <!-- 药品列表 -->
+  <view class="list-container" wx:if="{{ !loading }}">
+    <view 
+      class="medicine-card" 
+      wx:for="{{ medicines }}" 
+      wx:key="id"
+      bindtap="goToDetail"
+      data-id="{{ item.id }}"
+    >
+      <view class="medicine-info">
+        <view class="medicine-name">{{ item.name }}</view>
+        <view class="medicine-spec">{{ item.spec }}</view>
+        <view class="medicine-manufacturer">{{ item.manufacturer }}</view>
+      </view>
+      <view class="medicine-meta">
+        <view class="medicine-price">¥{{ item.price }}</view>
+        <view class="medicine-stock {{ item.stock <= item.minStock ? 'warning' : '' }}">
+          库存: {{ item.stock }} {{ item.unit }}
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 空状态 -->
+  <view wx:if="{{ !loading && medicines.length === 0 }}" class="empty-wrap">
+    <text>暂无药品数据</text>
+  </view>
+</view>

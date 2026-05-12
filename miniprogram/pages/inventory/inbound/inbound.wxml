@@ -1,0 +1,111 @@
+<view class="inbound-container">
+  <!-- 扫码按钮 -->
+  <view class="scan-section" bindtap="scanCode">
+    <text class="iconfont icon-scan"></text>
+    <text>扫码入库</text>
+  </view>
+
+  <!-- 入库表单 -->
+  <view class="form-section">
+    <view class="form-item required">
+      <view class="form-label">产品类型</view>
+      <picker mode="selector" range="{{productTypes}}" value="{{productTypeIndex}}" bindchange="onProductTypeChange">
+        <view class="picker-value">
+          {{productTypes[productTypeIndex] || '请选择产品类型'}}
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">产品名称</view>
+      <input class="form-input" placeholder="请选择或输入产品名称" value="{{productName}}" bindinput="onProductNameInput" bindtap="selectProduct" />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">规格型号</view>
+      <input class="form-input" placeholder="请输入规格型号" value="{{spec}}" bindinput="onSpecInput" />
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">批号</view>
+      <input class="form-input" placeholder="请输入批号" value="{{batchNo}}" bindinput="onBatchNoInput" />
+    </view>
+
+    <view class="form-row">
+      <view class="form-item half required">
+        <view class="form-label">数量</view>
+        <input class="form-input" type="number" placeholder="0" value="{{quantity}}" bindinput="onQuantityInput" />
+      </view>
+      <view class="form-item half">
+        <view class="form-label">单位</view>
+        <input class="form-input" placeholder="件" value="{{unit}}" bindinput="onUnitInput" />
+      </view>
+    </view>
+
+    <view class="form-row">
+      <view class="form-item half required">
+        <view class="form-label">单价(元)</view>
+        <input class="form-input" type="digit" placeholder="0.00" value="{{price}}" bindinput="onPriceInput" />
+      </view>
+      <view class="form-item half">
+        <view class="form-label">总金额</view>
+        <view class="form-value">¥{{totalAmount}}</view>
+      </view>
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">供应商</view>
+      <input class="form-input" placeholder="请输入供应商名称" value="{{supplier}}" bindinput="onSupplierInput" />
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">生产日期</view>
+      <picker mode="date" value="{{productionDate}}" bindchange="onProductionDateChange">
+        <view class="picker-value">
+          {{productionDate || '请选择生产日期'}}
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item required">
+      <view class="form-label">有效期至</view>
+      <picker mode="date" value="{{expiryDate}}" bindchange="onExpiryDateChange">
+        <view class="picker-value">
+          {{expiryDate || '请选择有效期'}}
+          <text class="picker-arrow">></text>
+        </view>
+      </picker>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">备注</view>
+      <textarea class="form-textarea" placeholder="请输入备注信息" value="{{remark}}" bindinput="onRemarkInput" maxlength="200" />
+    </view>
+  </view>
+
+  <!-- 提交按钮 -->
+  <view class="submit-section">
+    <button class="btn-primary submit-btn" bindtap="submitForm" loading="{{loading}}">确认入库</button>
+  </view>
+</view>
+
+<!-- 产品选择弹窗 -->
+<view class="product-modal" wx:if="{{showProductModal}}" bindtap="closeProductModal">
+  <view class="modal-content" catchtap="stopPropagation">
+    <view class="modal-header">
+      <text class="modal-title">选择产品</text>
+      <text class="modal-close" bindtap="closeProductModal">×</text>
+    </view>
+    <view class="modal-search">
+      <input class="search-input" placeholder="搜索产品名称" value="{{searchKeyword}}" bindinput="onSearchInput" />
+    </view>
+    <scroll-view class="modal-list" scroll-y>
+      <view class="product-item" wx:for="{{productList}}" wx:key="_id" bindtap="selectProductItem" data-item="{{item}}">
+        <text class="product-name">{{item.name}}</text>
+        <text class="product-spec">{{item.spec}} · {{item.unit}}</text>
+      </view>
+    </scroll-view>
+  </view>
+</view>

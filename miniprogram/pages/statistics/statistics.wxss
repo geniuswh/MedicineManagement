@@ -1,0 +1,226 @@
+.statistics-container {
+  min-height: 100vh;
+  background: #f5f5f5;
+  padding-bottom: 120rpx;
+}
+
+/* 时间选择器 */
+.time-selector {
+  background: #fff;
+  padding: 20rpx 30rpx;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20rpx;
+}
+
+.time-tabs {
+  display: flex;
+  background: #f5f5f5;
+  border-radius: 30rpx;
+  padding: 6rpx;
+}
+
+.time-tab {
+  padding: 12rpx 24rpx;
+  border-radius: 26rpx;
+  font-size: 26rpx;
+  color: #666;
+  transition: all 0.3s;
+}
+
+.time-tab.active {
+  background: #1890ff;
+  color: #fff;
+}
+
+.custom-date {
+  display: flex;
+  align-items: center;
+  font-size: 26rpx;
+  color: #1890ff;
+}
+
+.custom-date .iconfont {
+  margin-left: 8rpx;
+  font-size: 32rpx;
+}
+
+/* 总览卡片 */
+.overview-cards {
+  display: flex;
+  padding: 0 20rpx;
+  margin-bottom: 20rpx;
+}
+
+.overview-card {
+  flex: 1;
+  background: #fff;
+  border-radius: 16rpx;
+  padding: 24rpx;
+  margin: 0 10rpx;
+}
+
+.card-header {
+  margin-bottom: 20rpx;
+}
+
+.card-title {
+  display: block;
+  font-size: 28rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.card-subtitle {
+  display: block;
+  font-size: 22rpx;
+  color: #999;
+  margin-top: 4rpx;
+}
+
+.card-body {
+  text-align: center;
+  padding: 20rpx 0;
+}
+
+.card-value {
+  font-size: 56rpx;
+  font-weight: bold;
+  color: #1890ff;
+}
+
+.card-label {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+}
+
+.card-footer {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 20rpx;
+  border-top: 1rpx solid #f0f0f0;
+}
+
+.amount {
+  font-size: 32rpx;
+  font-weight: bold;
+  color: #52c41a;
+}
+
+.label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 图表区域 */
+.chart-section {
+  background: #fff;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.section-title {
+  font-size: 30rpx;
+  font-weight: bold;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.chart-container {
+  width: 100%;
+  height: 400rpx;
+}
+
+/* 排行榜 */
+.rank-section {
+  background: #fff;
+  margin: 0 20rpx 20rpx;
+  border-radius: 16rpx;
+  padding: 30rpx;
+}
+
+.rank-list {
+  margin-top: 20rpx;
+}
+
+.rank-item {
+  display: flex;
+  align-items: center;
+  padding: 20rpx 0;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.rank-item:last-child {
+  border-bottom: none;
+}
+
+.rank-number {
+  width: 48rpx;
+  height: 48rpx;
+  line-height: 48rpx;
+  text-align: center;
+  border-radius: 8rpx;
+  background: #f0f0f0;
+  font-size: 26rpx;
+  color: #999;
+  margin-right: 20rpx;
+}
+
+.rank-number.top-three {
+  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  color: #fff;
+}
+
+.rank-info {
+  flex: 1;
+}
+
+.rank-name {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  margin-bottom: 4rpx;
+}
+
+.rank-spec {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.rank-data {
+  text-align: right;
+}
+
+.rank-count {
+  display: block;
+  font-size: 28rpx;
+  color: #333;
+  font-weight: bold;
+}
+
+.rank-quantity {
+  font-size: 24rpx;
+  color: #999;
+}
+
+/* 导出按钮 */
+.export-btn {
+  position: fixed;
+  bottom: 140rpx;
+  right: 30rpx;
+  display: flex;
+  align-items: center;
+  background: linear-gradient(135deg, #1890ff 0%, #36cfc9 100%);
+  color: #fff;
+  padding: 20rpx 40rpx;
+  border-radius: 50rpx;
+  box-shadow: 0 8rpx 24rpx rgba(24, 144, 255, 0.4);
+}
+
+.export-btn .iconfont {
+  margin-right: 8rpx;
+  font-size: 32rpx;
+}

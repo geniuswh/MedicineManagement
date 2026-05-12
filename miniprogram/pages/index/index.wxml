@@ -1,0 +1,119 @@
+<view class="index-container">
+  <!-- 顶部欢迎卡片 -->
+  <view class="welcome-card">
+    <view class="welcome-info">
+      <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="user-name">{{userInfo.name || '未登录'}}</text>
+        <text class="user-role">{{roleName}}</text>
+      </view>
+    </view>
+    <view class="welcome-stats">
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.totalProducts}}</text>
+        <text class="stat-label">产品总数</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.todayInbound}}</text>
+        <text class="stat-label">今日入库</text>
+      </view>
+      <view class="stat-divider"></view>
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.todayOutbound}}</text>
+        <text class="stat-label">今日出库</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 快捷功能 -->
+  <view class="quick-actions">
+    <view class="section-title">快捷功能</view>
+    <view class="action-grid">
+      <view class="action-item" bindtap="goToInbound" wx:if="{{hasInboundPermission}}">
+        <view class="action-icon inbound-bg">
+          <text class="iconfont icon-inbound"></text>
+        </view>
+        <text class="action-name">入库</text>
+      </view>
+      <view class="action-item" bindtap="goToOutbound" wx:if="{{hasOutboundPermission}}">
+        <view class="action-icon outbound-bg">
+          <text class="iconfont icon-outbound"></text>
+        </view>
+        <text class="action-name">出库</text>
+      </view>
+      <view class="action-item" bindtap="goToMedicineList">
+        <view class="action-icon medicine-bg">
+          <text class="iconfont icon-medicine"></text>
+        </view>
+        <text class="action-name">药品</text>
+      </view>
+      <view class="action-item" bindtap="goToDeviceList">
+        <view class="action-icon device-bg">
+          <text class="iconfont icon-device"></text>
+        </view>
+        <text class="action-name">器械</text>
+      </view>
+      <view class="action-item" bindtap="goToStatistics">
+        <view class="action-icon stats-bg">
+          <text class="iconfont icon-chart"></text>
+        </view>
+        <text class="action-name">统计</text>
+      </view>
+      <view class="action-item" bindtap="scanCode" wx:if="{{hasInboundPermission || hasOutboundPermission}}">
+        <view class="action-icon scan-bg">
+          <text class="iconfont icon-scan"></text>
+        </view>
+        <text class="action-name">扫码</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 库存预警 -->
+  <view class="warning-section" wx:if="{{warnings.length > 0}}">
+    <view class="section-title">
+      <text>库存预警</text>
+      <text class="warning-count">{{warnings.length}}</text>
+    </view>
+    <view class="warning-list">
+      <view class="warning-item" wx:for="{{warnings}}" wx:key="_id" bindtap="goToDetail" data-id="{{item.productId}}" data-type="{{item.type}}">
+        <view class="warning-info">
+          <text class="warning-name">{{item.productName}}</text>
+          <text class="warning-spec">{{item.spec}}</text>
+        </view>
+        <view class="warning-status">
+          <text class="tag {{item.stock < item.minStock ? 'tag-danger' : 'tag-warning'}}">
+            库存: {{item.stock}} {{item.unit}}
+          </text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 最近出入库记录 -->
+  <view class="recent-section">
+    <view class="section-title">
+      <text>最近记录</text>
+      <text class="more-link" bindtap="goToRecords">查看更多</text>
+    </view>
+    <view class="record-list">
+      <view class="record-item" wx:for="{{recentRecords}}" wx:key="_id">
+        <view class="record-icon {{item.type === 'inbound' ? 'inbound-bg' : 'outbound-bg'}}">
+          <text class="iconfont {{item.type === 'inbound' ? 'icon-inbound' : 'icon-outbound'}}"></text>
+        </view>
+        <view class="record-info">
+          <view class="record-header">
+            <text class="record-name">{{item.productName}}</text>
+            <text class="record-amount {{item.type === 'inbound' ? 'text-success' : 'text-danger'}}">
+              {{item.type === 'inbound' ? '+' : '-'}}{{item.quantity}} {{item.unit}}
+            </text>
+          </view>
+          <view class="record-detail">
+            <text>{{item.batchNo}} · {{item.operatorName}}</text>
+          </view>
+          <text class="record-time">{{item.createTimeStr}}</text>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

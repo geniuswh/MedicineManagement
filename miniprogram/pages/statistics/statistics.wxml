@@ -1,0 +1,87 @@
+<view class="statistics-container">
+  <!-- 时间选择器 -->
+  <view class="time-selector">
+    <view class="time-tabs">
+      <view class="time-tab {{currentTab === 'day' ? 'active' : ''}}" bindtap="switchTab" data-tab="day">今日</view>
+      <view class="time-tab {{currentTab === 'week' ? 'active' : ''}}" bindtap="switchTab" data-tab="week">本周</view>
+      <view class="time-tab {{currentTab === 'month' ? 'active' : ''}}" bindtap="switchTab" data-tab="month">本月</view>
+      <view class="time-tab {{currentTab === 'year' ? 'active' : ''}}" bindtap="switchTab" data-tab="year">本年</view>
+    </view>
+    <view class="custom-date" bindtap="showDatePicker">
+      <text>{{dateRangeText}}</text>
+      <text class="iconfont icon-calendar"></text>
+    </view>
+  </view>
+
+  <!-- 总览卡片 -->
+  <view class="overview-cards">
+    <view class="overview-card">
+      <view class="card-header">
+        <text class="card-title">入库统计</text>
+        <text class="card-subtitle">Inbound</text>
+      </view>
+      <view class="card-body">
+        <view class="card-value">{{overview.inboundCount}}</view>
+        <view class="card-label">入库次数</view>
+      </view>
+      <view class="card-footer">
+        <text class="amount">¥{{overview.inboundAmount}}</text>
+        <text class="label">总金额</text>
+      </view>
+    </view>
+
+    <view class="overview-card">
+      <view class="card-header">
+        <text class="card-title">出库统计</text>
+        <text class="card-subtitle">Outbound</text>
+      </view>
+      <view class="card-body">
+        <view class="card-value">{{overview.outboundCount}}</view>
+        <view class="card-label">出库次数</view>
+      </view>
+      <view class="card-footer">
+        <text class="amount">¥{{overview.outboundAmount}}</text>
+        <text class="label">总金额</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 图表区域 -->
+  <view class="chart-section">
+    <view class="section-title">出入库趋势</view>
+    <view class="chart-container">
+      <ec-canvas id="trendChart" canvas-id="trendChart" ec="{{ trendChart }}"></ec-canvas>
+    </view>
+  </view>
+
+  <view class="chart-section">
+    <view class="section-title">品类分布</view>
+    <view class="chart-container">
+      <ec-canvas id="categoryChart" canvas-id="categoryChart" ec="{{ categoryChart }}"></ec-canvas>
+    </view>
+  </view>
+
+  <!-- 排行榜 -->
+  <view class="rank-section">
+    <view class="section-title">出库排行榜 TOP 10</view>
+    <view class="rank-list">
+      <view class="rank-item" wx:for="{{rankList}}" wx:key="index">
+        <view class="rank-number {{index < 3 ? 'top-three' : ''}}">{{index + 1}}</view>
+        <view class="rank-info">
+          <text class="rank-name">{{item.name}}</text>
+          <text class="rank-spec">{{item.spec}}</text>
+        </view>
+        <view class="rank-data">
+          <text class="rank-count">{{item.count}}次</text>
+          <text class="rank-quantity">{{item.quantity}}件</text>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 导出按钮 -->
+  <view class="export-btn" bindtap="exportReport" wx:if="{{hasExportPermission}}">
+    <text class="iconfont icon-export"></text>
+    <text>导出报表</text>
+  </view>
+</view>

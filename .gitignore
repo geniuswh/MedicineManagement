@@ -1,0 +1,12 @@
+node_modules/
+dist/
+.env
+.env.local
+*.log
+.DS_Store
+Thumbs.db
+miniprogram/node_modules/
+admin-frontend/node_modules/
+web-frontend/node_modules/
+cloudfunctions/node_modules/
+package-lock.json

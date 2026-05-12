@@ -1,0 +1,63 @@
+<view class="detail-page">
+  <view wx:if="{{ loading }}" class="loading-wrap">
+    <text>加载中...</text>
+  </view>
+  
+  <block wx:if="{{ !loading && medicine }}">
+    <!-- 基本信息 -->
+    <view class="info-card">
+      <view class="info-header">
+        <text class="info-title">{{ medicine.name }}</text>
+        <text class="category-tag">{{ medicine.category }}</text>
+      </view>
+      
+      <view class="info-row">
+        <text class="info-label">规格</text>
+        <text class="info-value">{{ medicine.spec }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">单位</text>
+        <text class="info-value">{{ medicine.unit }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">单价</text>
+        <text class="info-value price">¥{{ medicine.price }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">当前库存</text>
+        <text class="info-value {{ medicine.stock <= medicine.minStock ? 'warning' : '' }}">{{ medicine.stock }} {{ medicine.unit }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">最低库存</text>
+        <text class="info-value">{{ medicine.minStock }} {{ medicine.unit }}</text>
+      </view>
+    </view>
+
+    <!-- 详细信息 -->
+    <view class="info-card">
+      <view class="card-title">详细信息</view>
+      <view class="info-row">
+        <text class="info-label">条形码</text>
+        <text class="info-value">{{ medicine.barcode }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">生产厂家</text>
+        <text class="info-value">{{ medicine.manufacturer }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">批号</text>
+        <text class="info-value">{{ medicine.batchNo }}</text>
+      </view>
+      <view class="info-row">
+        <text class="info-label">有效期至</text>
+        <text class="info-value">{{ medicine.expiryDate }}</text>
+      </view>
+    </view>
+
+    <!-- 操作按钮 -->
+    <view class="action-buttons">
+      <button class="btn btn-primary" bindtap="onInbound">入库</button>
+      <button class="btn btn-info" bindtap="onOutbound">出库</button>
+    </view>
+  </block>
+</view>

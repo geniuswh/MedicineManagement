@@ -1,0 +1,91 @@
+<view class="profile-container">
+  <!-- 用户信息卡片 -->
+  <view class="user-card">
+    <view class="user-header">
+      <image class="avatar" src="{{userInfo.avatar || '/images/default-avatar.png'}}" mode="aspectFill"></image>
+      <view class="user-info">
+        <text class="user-name">{{userInfo.name}}</text>
+        <view class="user-tags">
+          <text class="tag">{{roleName}}</text>
+          <text class="tag">{{userInfo.department}}</text>
+        </view>
+      </view>
+      <text class="edit-btn" bindtap="editProfile">编辑</text>
+    </view>
+    <view class="user-stats">
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.inboundCount}}</text>
+        <text class="stat-label">入库次数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.outboundCount}}</text>
+        <text class="stat-label">出库次数</text>
+      </view>
+      <view class="stat-item">
+        <text class="stat-value">{{statistics.days}}</text>
+        <text class="stat-label">工作天数</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 功能菜单 -->
+  <view class="menu-section">
+    <view class="menu-item" bindtap="goToRecords">
+      <view class="menu-icon">
+        <text class="iconfont icon-record"></text>
+      </view>
+      <text class="menu-name">我的记录</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="goToSettings" wx:if="{{isAdmin}}">
+      <view class="menu-icon">
+        <text class="iconfont icon-setting"></text>
+      </view>
+      <text class="menu-name">系统设置</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="goToUserManage" wx:if="{{hasUserPermission}}">
+      <view class="menu-icon">
+        <text class="iconfont icon-user"></text>
+      </view>
+      <text class="menu-name">用户管理</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="goToPermissionManage" wx:if="{{hasPermissionManage}}">
+      <view class="menu-icon">
+        <text class="iconfont icon-permission"></text>
+      </view>
+      <text class="menu-name">权限管理</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="showHelp">
+      <view class="menu-icon">
+        <text class="iconfont icon-help"></text>
+      </view>
+      <text class="menu-name">帮助中心</text>
+      <text class="menu-arrow">></text>
+    </view>
+
+    <view class="menu-item" bindtap="showAbout">
+      <view class="menu-icon">
+        <text class="iconfont icon-about"></text>
+      </view>
+      <text class="menu-name">关于我们</text>
+      <text class="menu-arrow">></text>
+    </view>
+  </view>
+
+  <!-- 退出登录 -->
+  <view class="logout-section">
+    <button class="logout-btn" bindtap="logout">退出登录</button>
+  </view>
+
+  <!-- 版本信息 -->
+  <view class="version-info">
+    <text>版本 1.0.0</text>
+  </view>
+</view>

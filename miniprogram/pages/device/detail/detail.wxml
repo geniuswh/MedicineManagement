@@ -1,0 +1,23 @@
+<view class="detail-page">
+  <view wx:if="{{ loading }}" class="loading-wrap">
+    <text>加载中...</text>
+  </view>
+  
+  <block wx:if="{{ !loading && device }}">
+    <view class="info-card">
+      <view class="info-header">
+        <text class="info-title">{{ device.name }}</text>
+        <text class="category-tag">{{ device.category }}</text>
+      </view>
+      <view class="info-row"><text class="info-label">规格</text><text class="info-value">{{ device.spec }}</text></view>
+      <view class="info-row"><text class="info-label">单价</text><text class="info-value price">¥{{ device.price }}</text></view>
+      <view class="info-row"><text class="info-label">库存</text><text class="info-value">{{ device.stock }} {{ device.unit }}</text></view>
+      <view class="info-row"><text class="info-label">厂家</text><text class="info-value">{{ device.manufacturer }}</text></view>
+    </view>
+
+    <view class="action-buttons">
+      <button class="btn btn-primary" bindtap="onInbound">入库</button>
+      <button class="btn btn-info" bindtap="onOutbound">出库</button>
+    </view>
+  </block>
+</view>
