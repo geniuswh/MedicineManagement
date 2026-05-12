@@ -137,6 +137,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
 import { ElMessage } from 'element-plus'
+import request from '@/utils/request'
 
 const userStore = useUserStore()
 
@@ -162,12 +163,14 @@ const hasExportPermission = computed(() => userStore.hasPermission('statistics:e
 
 onMounted(() => {
   loadStatistics()
-  initCharts()
+  loadTrendData()
+  loadRankData()
 })
 
 // 时间范围变化
 const handleTimeChange = () => {
   loadStatistics()
+  loadTrendData()
 }
 
 // 自定义日期变化
@@ -180,69 +183,67 @@ const handleDateChange = () => {
 
 // 加载统计数据
 const loadStatistics = async () => {
-  // 模拟数据
-  overview.inboundCount = 156
-  overview.inboundAmount = '125,680.00'
-  overview.outboundCount = 142
-  overview.outboundAmount = '98,450.00'
-  overview.totalQuantity = 8520
-  overview.totalAmount = '224,130.00'
-  
-  inboundRankList.value = [
-    { name: '阿莫西林胶囊', count: 25, quantity: 2500 },
-    { name: '布洛芬片', count: 20, quantity: 2000 },
-    { name: '维生素C片', count: 18, quantity: 1800 },
-    { name: '医用口罩', count: 15, quantity: 5000 },
-    { name: '一次性注射器', count: 12, quantity: 1200 }
-  ]
-  
-  outboundRankList.value = [
-    { name: '阿莫西林胶囊', count: 22, quantity: 2200 },
-    { name: '医用口罩', count: 18, quantity: 4500 },
-    { name: '布洛芬片', count: 16, quantity: 1600 },
-    { name: '一次性注射器', count: 14, quantity: 1400 },
-    { name: '维生素C片', count: 12, quantity: 1200 }
-  ]
+  try {
+    const res = await request({ url: '/statistics', method: 'get', params: { period: timeRange.value || 'month' } })
+    const data = res[timeRange.value] || res.month || res
+    // today 格式: { inboundCount, outboundCount, inboundAmount, outboundAmount }
+    // month/quarter/year 格式: { totalInbound, totalOutbound, inboundAmount, outboundAmount }
+    overview.inboundCount = data.totalInbound || data.inboundCount || 0
+    overview.inboundAmount = (data.inboundAmount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })
+    overview.outboundCount = data.totalOutbound || data.outboundCount || 0
+    overview.outboundAmount = (data.outboundAmount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })
+    overview.totalQuantity = overview.inboundCount + overview.outboundCount
+    overview.totalAmount = ((data.inboundAmount || 0) + (data.outboundAmount || 0)).toLocaleString('zh-CN', { minimumFractionDigits: 2 })
+  } catch (e) {
+    console.error('加载统计失败', e)
+  }
+}
+
+// 加载趋势数据
+const loadTrendData = async () => {
+  try {
+    const res = await request({ url: '/statistics/trend', method: 'get', params: { period: timeRange.value === 'today' ? 'week' : (timeRange.value || 'month') } })
+    initCharts(res)
+  } catch (e) {
+    initCharts([])
+  }
+}
+
+// 加载排行数据
+const loadRankData = async () => {
+  try {
+    const [inboundRes, outboundRes] = await Promise.all([
+      request({ url: '/statistics/rank', method: 'get', params: { type: 'inbound' } }),
+      request({ url: '/statistics/rank', method: 'get', params: { type: 'outbound' } })
+    ])
+    inboundRankList.value = inboundRes || []
+    outboundRankList.value = outboundRes || []
+  } catch (e) {
+    console.error('加载排行失败', e)
+  }
 }
 
 // 初始化图表
-const initCharts = () => {
-  // 趋势图
+const initCharts = (trendData) => {
+  const dates = trendData.length > 0 ? trendData.map(d => d.date || d.month) : []
+  const inboundData = trendData.map(d => d.inbound)
+  const outboundData = trendData.map(d => d.outbound)
+
   const trendChart = echarts.init(trendChartRef.value)
-  const trendOption = {
+  trendChart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['入库', '出库'], bottom: 0 },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: ['1月', '2月', '3月', '4月', '5月', '6月', '7月', '8月', '9月', '10月', '11月', '12月']
-    },
+    xAxis: { type: 'category', boundaryGap: false, data: dates },
     yAxis: { type: 'value' },
     series: [
-      {
-        name: '入库',
-        type: 'line',
-        smooth: true,
-        itemStyle: { color: '#52c41a' },
-        areaStyle: { color: 'rgba(82, 196, 26, 0.1)' },
-        data: [820, 932, 901, 934, 1290, 1330, 1320, 1450, 1520, 1680, 1750, 1820]
-      },
-      {
-        name: '出库',
-        type: 'line',
-        smooth: true,
-        itemStyle: { color: '#1890ff' },
-        areaStyle: { color: 'rgba(24, 144, 255, 0.1)' },
-        data: [620, 782, 791, 834, 990, 1030, 1120, 1250, 1320, 1480, 1550, 1620]
-      }
+      { name: '入库', type: 'line', smooth: true, itemStyle: { color: '#52c41a' }, areaStyle: { color: 'rgba(82, 196, 26, 0.1)' }, data: inboundData },
+      { name: '出库', type: 'line', smooth: true, itemStyle: { color: '#1890ff' }, areaStyle: { color: 'rgba(24, 144, 255, 0.1)' }, data: outboundData }
     ]
-  }
-  trendChart.setOption(trendOption)
+  })
 
-  // 品类分布图
   const categoryChart = echarts.init(categoryChartRef.value)
-  const categoryOption = {
+  categoryChart.setOption({
     tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
     legend: { bottom: 0, left: 'center' },
     series: [{
@@ -254,13 +255,11 @@ const initCharts = () => {
       emphasis: { label: { show: true, fontSize: '16', fontWeight: 'bold' } },
       labelLine: { show: false },
       data: [
-        { value: 1048, name: '药品', itemStyle: { color: '#722ed1' } },
-        { value: 735, name: '医疗器械', itemStyle: { color: '#1890ff' } },
-        { value: 580, name: '耗材', itemStyle: { color: '#52c41a' } }
+        { value: overview.inboundCount || 0, name: '入库', itemStyle: { color: '#52c41a' } },
+        { value: overview.outboundCount || 0, name: '出库', itemStyle: { color: '#1890ff' } }
       ]
     }]
-  }
-  categoryChart.setOption(categoryOption)
+  })
 
   window.addEventListener('resize', () => {
     trendChart.resize()

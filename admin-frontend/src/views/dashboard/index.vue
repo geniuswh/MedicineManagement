@@ -155,6 +155,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
+import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -163,71 +164,101 @@ const userInfo = computed(() => userStore.userInfo)
 const chartPeriod = ref('week')
 
 const stats = reactive({
-  totalProducts: 256,
-  todayInbound: 32,
-  todayOutbound: 28,
-  totalUsers: 18
+  totalProducts: 0,
+  todayInbound: 0,
+  todayOutbound: 0,
+  totalUsers: 0
 })
 
-const recentRecords = ref([
-  { productName: '阿莫西林胶囊', type: 'inbound', quantity: 100, time: '14:30' },
-  { productName: '一次性注射器', type: 'outbound', quantity: 50, time: '14:20' },
-  { productName: '布洛芬片', type: 'inbound', quantity: 200, time: '14:10' },
-  { productName: '医用口罩', type: 'outbound', quantity: 300, time: '13:50' }
-])
-
-const warnings = ref([
-  { name: '阿莫西林胶囊', stock: 50, minStock: 100 },
-  { name: '一次性注射器', stock: 200, minStock: 500 },
-  { name: '医用口罩', stock: 100, minStock: 300 }
-])
+const recentRecords = ref([])
+const warnings = ref([])
 
 const quickActions = [
-  { name: '药品入库', icon: 'Download', color: '#52c41a', path: '/inventory/records' },
-  { name: '药品出库', icon: 'Upload', color: '#1890ff', path: '/inventory/records' },
+  { name: '药品入库', icon: 'Download', color: '#52c41a', path: '/product/medicine' },
+  { name: '药品出库', icon: 'Upload', color: '#1890ff', path: '/product/medicine' },
   { name: '添加药品', icon: 'Plus', color: '#722ed1', path: '/product/medicine' },
   { name: '添加器械', icon: 'Plus', color: '#fa8c16', path: '/product/device' },
   { name: '用户管理', icon: 'User', color: '#eb2f96', path: '/user' },
-  { name: '数据导出', icon: 'Download', color: '#13c2c2', path: '/statistics' }
+  { name: '数据统计', icon: 'DataAnalysis', color: '#13c2c2', path: '/statistics' }
 ]
 
 const trendChartRef = ref(null)
 const pieChartRef = ref(null)
 
 onMounted(() => {
-  initCharts()
+  loadStatistics()
+  loadRecentRecords()
+  loadWarnings()
+  loadChartData()
 })
 
-const initCharts = () => {
-  // 趋势图
+const loadStatistics = async () => {
+  try {
+    const [statsRes, usersRes] = await Promise.all([
+      request({ url: '/statistics', method: 'get', params: { period: 'month' } }),
+      request({ url: '/users', method: 'get', params: { pageSize: 1 } })
+    ])
+    stats.totalProducts = statsRes.totalProducts || 0
+    stats.todayInbound = statsRes.today?.inboundCount || 0
+    stats.todayOutbound = statsRes.today?.outboundCount || 0
+    stats.totalUsers = usersRes.total || 0
+  } catch (e) {
+    console.error('加载统计失败', e)
+  }
+}
+
+const loadRecentRecords = async () => {
+  try {
+    const [inboundRes, outboundRes] = await Promise.all([
+      request({ url: '/inbound', method: 'get', params: { pageSize: 5 } }),
+      request({ url: '/outbound', method: 'get', params: { pageSize: 5 } })
+    ])
+    const allRecords = [
+      ...inboundRes.list.map(r => ({ ...r, type: 'inbound' })),
+      ...outboundRes.list.map(r => ({ ...r, type: 'outbound' }))
+    ].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)).slice(0, 5)
+    recentRecords.value = allRecords
+  } catch (e) {
+    console.error('加载记录失败', e)
+  }
+}
+
+const loadWarnings = async () => {
+  try {
+    const res = await request({ url: '/warnings', method: 'get' })
+    warnings.value = res.slice(0, 5)
+  } catch (e) {
+    console.error('加载预警失败', e)
+  }
+}
+
+const loadChartData = async () => {
+  try {
+    const trendRes = await request({ url: '/statistics/trend', method: 'get', params: { period: 'week' } })
+    initCharts(trendRes)
+  } catch (e) {
+    initCharts([])
+  }
+}
+
+const initCharts = (trendData) => {
+  const dates = trendData.length > 0 ? trendData.map(d => d.date || d.month) : ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const inboundData = trendData.length > 0 ? trendData.map(d => d.inbound) : [0, 0, 0, 0, 0, 0, 0]
+  const outboundData = trendData.length > 0 ? trendData.map(d => d.outbound) : [0, 0, 0, 0, 0, 0, 0]
+
   const trendChart = echarts.init(trendChartRef.value)
   trendChart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['入库', '出库'], bottom: 0 },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-    },
+    xAxis: { type: 'category', boundaryGap: false, data: dates },
     yAxis: { type: 'value' },
     series: [
-      {
-        name: '入库', type: 'line', smooth: true,
-        itemStyle: { color: '#52c41a' },
-        areaStyle: { color: 'rgba(82, 196, 26, 0.1)' },
-        data: [120, 132, 101, 134, 90, 230, 210]
-      },
-      {
-        name: '出库', type: 'line', smooth: true,
-        itemStyle: { color: '#1890ff' },
-        areaStyle: { color: 'rgba(24, 144, 255, 0.1)' },
-        data: [220, 182, 191, 234, 290, 330, 310]
-      }
+      { name: '入库', type: 'line', smooth: true, itemStyle: { color: '#52c41a' }, areaStyle: { color: 'rgba(82, 196, 26, 0.1)' }, data: inboundData },
+      { name: '出库', type: 'line', smooth: true, itemStyle: { color: '#1890ff' }, areaStyle: { color: 'rgba(24, 144, 255, 0.1)' }, data: outboundData }
     ]
   })
 
-  // 饼图
   const pieChart = echarts.init(pieChartRef.value)
   pieChart.setOption({
     tooltip: { trigger: 'item' },
@@ -237,9 +268,8 @@ const initCharts = () => {
       radius: ['40%', '70%'],
       itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
       data: [
-        { value: 1048, name: '药品', itemStyle: { color: '#722ed1' } },
-        { value: 735, name: '医疗器械', itemStyle: { color: '#1890ff' } },
-        { value: 580, name: '耗材', itemStyle: { color: '#52c41a' } }
+        { value: stats.totalProducts || 0, name: '产品总数', itemStyle: { color: '#722ed1' } },
+        { value: stats.totalUsers || 0, name: '用户总数', itemStyle: { color: '#eb2f96' } }
       ]
     }]
   })

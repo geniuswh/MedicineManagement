@@ -37,8 +37,8 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" width="80">
           <template #default="{ row }">
-            <el-tag :type="row.status === 'active' ? 'success' : 'info'">
-              {{ row.status === 'active' ? '正常' : '禁用' }}
+            <el-tag :type="row.status === 'active' || row.status === 1 ? 'success' : 'info'">
+              {{ row.status === 'active' || row.status === 1 ? '正常' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>

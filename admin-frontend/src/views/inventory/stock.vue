@@ -93,10 +93,10 @@
         <el-table-column prop="minStock" label="最低库存" width="90" />
         <el-table-column prop="unit" label="单位" width="60" />
         <el-table-column prop="price" label="单价" width="80">
-          <template #default="{ row }">¥{{ row.price.toFixed(2) }}</template>
+          <template #default="{ row }">¥{{ (row.price || 0).toFixed(2) }}</template>
         </el-table-column>
         <el-table-column label="库存金额" width="100">
-          <template #default="{ row }">¥{{ (row.stock * row.price).toFixed(2) }}</template>
+          <template #default="{ row }">¥{{ ((row.stock || 0) * (row.price || 0)).toFixed(2) }}</template>
         </el-table-column>
         <el-table-column prop="category" label="分类" width="90" />
       </el-table>

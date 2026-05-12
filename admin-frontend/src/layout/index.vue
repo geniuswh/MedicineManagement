@@ -131,7 +131,7 @@
 import { ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
-import { ElMessageBox } from 'element-plus'
+import { ElMessageBox, ElMessage } from 'element-plus'
 import { Monitor } from '@element-plus/icons-vue'
 
 const route = useRoute()
@@ -156,7 +156,7 @@ const showNotifications = () => {
 const handleCommand = (command) => {
   switch (command) {
     case 'profile':
-      router.push('/profile')
+      ElMessage.info('个人中心功能开发中')
       break
     case 'password':
       // 打开修改密码对话框

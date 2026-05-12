@@ -36,6 +36,20 @@ function authMiddleware(req, res, next) {
   }
 }
 
+// 安全的动态UPDATE构建 - 只允许白名单字段
+const medicineFields = ['name','barcode','category','spec','unit','manufacturer','approvalNumber','price','stock','minStock','batchNo','expiryDate','status','remark','updateTime'];
+const deviceFields = ['name','barcode','category','spec','unit','manufacturer','registrationNumber','price','stock','minStock','batchNo','expiryDate','status','remark','updateTime'];
+const userFields = ['account','name','phone','avatar','department','role','permissions','status','updateTime'];
+
+function safeUpdate(table, allowedFields, data, id) {
+  const filtered = Object.keys(data).filter(k => k !== 'id' && allowedFields.includes(k));
+  if (filtered.length === 0) throw new Error('没有有效的更新字段');
+  const sets = filtered.map(k => `${k} = @${k}`).join(', ');
+  const params = { id: parseInt(id) };
+  filtered.forEach(k => { params[k] = data[k]; });
+  return { sql: `UPDATE ${table} SET ${sets} WHERE id = @id`, params };
+}
+
 // ========== 认证 ==========
 app.post('/api/auth/login', (req, res) => {
   const { account, password } = req.body;
@@ -125,8 +139,8 @@ app.put('/api/medicines/:id', authMiddleware, (req, res) => {
     const db = getDb();
     const data = req.body;
     data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
-    db.prepare(`UPDATE medicines SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
+    const { sql, params } = safeUpdate('medicines', medicineFields, data, req.params.id);
+    db.prepare(sql).run(params);
     const medicine = db.prepare('SELECT * FROM medicines WHERE id = ?').get(req.params.id);
     res.json(response(medicine));
   } catch (err) {
@@ -201,8 +215,8 @@ app.put('/api/devices/:id', authMiddleware, (req, res) => {
     const db = getDb();
     const data = req.body;
     data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
-    const sets = Object.keys(data).filter(k => k !== 'id').map(k => `${k} = @${k}`).join(', ');
-    db.prepare(`UPDATE devices SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
+    const { sql, params } = safeUpdate('devices', deviceFields, data, req.params.id);
+    db.prepare(sql).run(params);
     const device = db.prepare('SELECT * FROM devices WHERE id = ?').get(req.params.id);
     res.json(response(device));
   } catch (err) {
@@ -452,7 +466,8 @@ app.post('/api/users', authMiddleware, (req, res) => {
   data.updateTime = data.createTime;
   if (!data.permissions) data.permissions = '[]';
   if (!data.role) data.role = 'viewer';
-  if (!data.status) data.status = 'active';
+  if (!data.status) data.status = 1;
+  if (typeof data.permissions !== 'string') data.permissions = JSON.stringify(data.permissions);
 
   const result = db.prepare(`
     INSERT INTO users (account, name, phone, password, department, role, permissions, status, createTime, updateTime)
@@ -469,9 +484,8 @@ app.put('/api/users/:id', authMiddleware, (req, res) => {
   data.updateTime = new Date().toISOString().replace('T', ' ').substring(0, 19);
   if (data.permissions && typeof data.permissions !== 'string') data.permissions = JSON.stringify(data.permissions);
 
-  const fields = Object.keys(data).filter(k => k !== 'id');
-  const sets = fields.map(k => `${k} = @${k}`).join(', ');
-  db.prepare(`UPDATE users SET ${sets} WHERE id = @id`).run({ ...data, id: parseInt(req.params.id) });
+  const { sql, params } = safeUpdate('users', userFields, data, req.params.id);
+  db.prepare(sql).run(params);
   const user = db.prepare('SELECT id, account, name, phone, department, role, permissions, status, createTime FROM users WHERE id = ?').get(req.params.id);
   if (user) user.permissions = JSON.parse(user.permissions);
   res.json(response(user));

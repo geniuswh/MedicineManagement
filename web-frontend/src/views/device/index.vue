@@ -29,7 +29,7 @@
         <el-table-column prop="unit" label="单位" width="60" />
         <el-table-column prop="category" label="分类" width="100" />
         <el-table-column prop="price" label="单价" width="80">
-          <template #default="{ row }">¥{{ row.price.toFixed(2) }}</template>
+          <template #default="{ row }">¥{{ (row.price || 0).toFixed(2) }}</template>
         </el-table-column>
         <el-table-column prop="stock" label="库存" width="80">
           <template #default="{ row }">

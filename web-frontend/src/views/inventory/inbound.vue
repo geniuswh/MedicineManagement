@@ -139,7 +139,7 @@
             </el-table-column>
             <el-table-column prop="totalAmount" label="金额" width="80">
               <template #default="{ row }">
-                ¥{{ row.totalAmount.toFixed(2) }}
+                ¥{{ (row.totalAmount || 0).toFixed(2) }}
               </template>
             </el-table-column>
             <el-table-column prop="createTime" label="时间" width="140">

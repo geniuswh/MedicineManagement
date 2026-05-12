@@ -71,7 +71,8 @@ const loadData = async () => {
 }
 
 const handleInbound = (row) => {
-  ElMessage.success('已跳转到入库页面: ' + row.name)
+  // 跳转到库存查询页面，可以查看详情
+  ElMessage.info('请联系仓管人员进行补货操作，产品: ' + row.name)
 }
 </script>
 

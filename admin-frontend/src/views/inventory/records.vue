@@ -55,7 +55,7 @@
           </template>
         </el-table-column>
         <el-table-column prop="totalAmount" label="金额" width="90">
-          <template #default="{ row }">¥{{ row.totalAmount.toFixed(2) }}</template>
+          <template #default="{ row }">¥{{ (row.totalAmount || 0).toFixed(2) }}</template>
         </el-table-column>
         <el-table-column prop="operatorName" label="操作人" width="80" />
         <el-table-column prop="createTime" label="时间" width="140" />

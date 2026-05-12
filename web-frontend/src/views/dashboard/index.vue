@@ -133,6 +133,7 @@ import { ref, reactive, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/user'
 import * as echarts from 'echarts'
+import request from '@/utils/request'
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -156,76 +157,81 @@ onMounted(() => {
   loadStatistics()
   loadRecentRecords()
   loadWarnings()
-  initCharts()
+  loadChartData()
 })
 
 // 加载统计数据
 const loadStatistics = async () => {
-  // 模拟数据
-  statistics.totalProducts = 256
-  statistics.todayInbound = 32
-  statistics.todayOutbound = 28
-  statistics.warnings = 5
+  try {
+    const res = await request({ url: '/statistics', method: 'get', params: { period: 'month' } })
+    statistics.totalProducts = res.totalProducts || 0
+    statistics.todayInbound = res.today?.inboundCount || 0
+    statistics.todayOutbound = res.today?.outboundCount || 0
+    statistics.warnings = res.lowStockCount || 0
+  } catch (e) {
+    console.error('加载统计失败', e)
+  }
 }
 
 // 加载最近记录
 const loadRecentRecords = async () => {
-  recentRecords.value = [
-    { productName: '阿莫西林胶囊', type: 'inbound', quantity: 100, createTime: '2024-01-15 14:30' },
-    { productName: '一次性注射器', type: 'outbound', quantity: 50, createTime: '2024-01-15 14:20' },
-    { productName: '布洛芬片', type: 'inbound', quantity: 200, createTime: '2024-01-15 14:10' },
-    { productName: '医用口罩', type: 'outbound', quantity: 300, createTime: '2024-01-15 13:50' },
-    { productName: '维生素C片', type: 'inbound', quantity: 150, createTime: '2024-01-15 13:30' }
-  ]
+  try {
+    const [inboundRes, outboundRes] = await Promise.all([
+      request({ url: '/inbound', method: 'get', params: { pageSize: 5 } }),
+      request({ url: '/outbound', method: 'get', params: { pageSize: 5 } })
+    ])
+    const allRecords = [
+      ...inboundRes.list.map(r => ({ ...r, type: 'inbound' })),
+      ...outboundRes.list.map(r => ({ ...r, type: 'outbound' }))
+    ].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)).slice(0, 5)
+    recentRecords.value = allRecords
+  } catch (e) {
+    console.error('加载记录失败', e)
+  }
 }
 
 // 加载库存预警
 const loadWarnings = async () => {
-  warnings.value = [
-    { id: 1, name: '阿莫西林胶囊', stock: 50, minStock: 100, unit: '盒' },
-    { id: 2, name: '一次性注射器', stock: 200, minStock: 500, unit: '支' },
-    { id: 3, name: '医用口罩', stock: 100, minStock: 300, unit: '个' }
-  ]
+  try {
+    const res = await request({ url: '/warnings', method: 'get' })
+    warnings.value = res.slice(0, 5)
+  } catch (e) {
+    console.error('加载预警失败', e)
+  }
+}
+
+// 加载图表数据
+const loadChartData = async () => {
+  try {
+    const trendRes = await request({ url: '/statistics/trend', method: 'get', params: { period: 'week' } })
+    initCharts(trendRes)
+  } catch (e) {
+    initCharts([])
+  }
 }
 
 // 初始化图表
-const initCharts = () => {
-  // 趋势图
+const initCharts = (trendData) => {
   const trendChart = echarts.init(trendChartRef.value)
-  const trendOption = {
+  const dates = trendData.length > 0 ? trendData.map(d => d.date || d.month) : ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const inboundData = trendData.length > 0 ? trendData.map(d => d.inbound) : [0, 0, 0, 0, 0, 0, 0]
+  const outboundData = trendData.length > 0 ? trendData.map(d => d.outbound) : [0, 0, 0, 0, 0, 0, 0]
+
+  trendChart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['入库', '出库'], bottom: 0 },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
-    xAxis: {
-      type: 'category',
-      boundaryGap: false,
-      data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
-    },
+    xAxis: { type: 'category', boundaryGap: false, data: dates },
     yAxis: { type: 'value' },
     series: [
-      {
-        name: '入库',
-        type: 'line',
-        smooth: true,
-        itemStyle: { color: '#52c41a' },
-        areaStyle: { color: 'rgba(82, 196, 26, 0.1)' },
-        data: [120, 132, 101, 134, 90, 230, 210]
-      },
-      {
-        name: '出库',
-        type: 'line',
-        smooth: true,
-        itemStyle: { color: '#1890ff' },
-        areaStyle: { color: 'rgba(24, 144, 255, 0.1)' },
-        data: [220, 182, 191, 234, 290, 330, 310]
-      }
+      { name: '入库', type: 'line', smooth: true, itemStyle: { color: '#52c41a' }, areaStyle: { color: 'rgba(82, 196, 26, 0.1)' }, data: inboundData },
+      { name: '出库', type: 'line', smooth: true, itemStyle: { color: '#1890ff' }, areaStyle: { color: 'rgba(24, 144, 255, 0.1)' }, data: outboundData }
     ]
-  }
-  trendChart.setOption(trendOption)
+  })
 
   // 品类分布图
   const categoryChart = echarts.init(categoryChartRef.value)
-  const categoryOption = {
+  categoryChart.setOption({
     tooltip: { trigger: 'item', formatter: '{b}: {c} ({d}%)' },
     legend: { bottom: 0, left: 'center' },
     series: [{
@@ -237,15 +243,12 @@ const initCharts = () => {
       emphasis: { label: { show: true, fontSize: '16', fontWeight: 'bold' } },
       labelLine: { show: false },
       data: [
-        { value: 1048, name: '药品', itemStyle: { color: '#722ed1' } },
-        { value: 735, name: '医疗器械', itemStyle: { color: '#1890ff' } },
-        { value: 580, name: '耗材', itemStyle: { color: '#52c41a' } }
+        { value: statistics.totalProducts || 0, name: '产品总数', itemStyle: { color: '#722ed1' } },
+        { value: statistics.warnings || 0, name: '库存预警', itemStyle: { color: '#fa8c16' } }
       ]
     }]
-  }
-  categoryChart.setOption(categoryOption)
+  })
 
-  // 窗口大小变化时重绘图表
   window.addEventListener('resize', () => {
     trendChart.resize()
     categoryChart.resize()
@@ -256,7 +259,7 @@ const initCharts = () => {
 const handleInbound = (row) => {
   router.push({
     path: '/inbound',
-    query: { productId: row.id }
+    query: { productId: row.id, type: row.type || 'medicine' }
   })
 }
 </script>

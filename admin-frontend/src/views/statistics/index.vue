@@ -123,7 +123,7 @@ const stats = reactive({
   inboundAmount: '0',
   outboundCount: 0,
   outboundAmount: '0',
-  totalProducts: 20
+  totalProducts: 0
 })
 
 const totalAmount = computed(() => {
@@ -135,55 +135,53 @@ const outboundRank = ref([])
 
 onMounted(() => {
   loadStatistics()
-  loadTrendData()
 })
 
 const loadStatistics = async () => {
   try {
     const res = await request({ url: '/statistics', method: 'get', params: { period: period.value } })
-    Object.assign(stats, res.period || res)
+    const data = res[period.value] || res.month || res
+    stats.inboundCount = data.totalInbound || data.inboundCount || 0
+    stats.inboundAmount = (data.inboundAmount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })
+    stats.outboundCount = data.totalOutbound || data.outboundCount || 0
+    stats.outboundAmount = (data.outboundAmount || 0).toLocaleString('zh-CN', { minimumFractionDigits: 2 })
+    stats.totalProducts = data.totalProducts || 0
   } catch (error) {
     console.error(error)
   }
+  loadTrendData()
 }
 
 const loadTrendData = async () => {
   try {
-    const res = await request({ url: '/statistics/trend', method: 'get' })
-    initCharts(res)
+    const [trendRes, inRankRes, outRankRes] = await Promise.all([
+      request({ url: '/statistics/trend', method: 'get', params: { period: period.value === 'today' ? 'week' : period.value } }),
+      request({ url: '/statistics/rank', method: 'get', params: { type: 'inbound' } }),
+      request({ url: '/statistics/rank', method: 'get', params: { type: 'outbound' } })
+    ])
+    initCharts(trendRes)
+    inboundRank.value = inRankRes || []
+    outboundRank.value = outRankRes || []
   } catch (error) {
     initCharts([])
   }
-  
-  // 加载排行数据
-  inboundRank.value = [
-    { name: '医用外科口罩', count: 25, quantity: 5200 },
-    { name: '一次性注射器', count: 20, quantity: 3500 },
-    { name: '阿莫西林胶囊', count: 18, quantity: 1800 },
-    { name: '布洛芬片', count: 15, quantity: 1500 },
-    { name: '板蓝根颗粒', count: 12, quantity: 1200 }
-  ]
-  outboundRank.value = [
-    { name: '医用外科口罩', count: 28, quantity: 4800 },
-    { name: '一次性注射器', count: 22, quantity: 3200 },
-    { name: '阿莫西林胶囊', count: 16, quantity: 1500 },
-    { name: '医用纱布块', count: 14, quantity: 2500 },
-    { name: '创可贴', count: 12, quantity: 1800 }
-  ]
 }
 
 const initCharts = (trendData) => {
-  // 趋势图
+  const dates = trendData.length > 0 ? trendData.map(d => d.date || d.month) : ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+  const inboundData = trendData.length > 0 ? trendData.map(d => d.inbound) : [0, 0, 0, 0, 0, 0, 0]
+  const outboundData = trendData.length > 0 ? trendData.map(d => d.outbound) : [0, 0, 0, 0, 0, 0, 0]
+
   const trendChart = echarts.init(trendChartRef.value)
   trendChart.setOption({
     tooltip: { trigger: 'axis' },
     legend: { data: ['入库', '出库'], bottom: 0 },
     grid: { left: '3%', right: '4%', bottom: '15%', top: '10%', containLabel: true },
-    xAxis: { type: 'category', data: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'] },
+    xAxis: { type: 'category', data: dates },
     yAxis: { type: 'value' },
     series: [
-      { name: '入库', type: 'line', smooth: true, itemStyle: { color: '#52c41a' }, areaStyle: { color: 'rgba(82, 196, 26, 0.1)' }, data: [18, 22, 16, 25, 20, 19, 21] },
-      { name: '出库', type: 'line', smooth: true, itemStyle: { color: '#1890ff' }, areaStyle: { color: 'rgba(24, 144, 255, 0.1)' }, data: [15, 19, 20, 22, 18, 21, 17] }
+      { name: '入库', type: 'line', smooth: true, itemStyle: { color: '#52c41a' }, areaStyle: { color: 'rgba(82, 196, 26, 0.1)' }, data: inboundData },
+      { name: '出库', type: 'line', smooth: true, itemStyle: { color: '#1890ff' }, areaStyle: { color: 'rgba(24, 144, 255, 0.1)' }, data: outboundData }
     ]
   })
 
@@ -197,9 +195,8 @@ const initCharts = (trendData) => {
       radius: ['40%', '70%'],
       itemStyle: { borderRadius: 10, borderColor: '#fff', borderWidth: 2 },
       data: [
-        { value: 1048, name: '药品', itemStyle: { color: '#722ed1' } },
-        { value: 735, name: '医疗器械', itemStyle: { color: '#1890ff' } },
-        { value: 580, name: '耗材', itemStyle: { color: '#52c41a' } }
+        { value: stats.inboundCount || 0, name: '入库', itemStyle: { color: '#52c41a' } },
+        { value: stats.outboundCount || 0, name: '出库', itemStyle: { color: '#1890ff' } }
       ]
     }]
   })
